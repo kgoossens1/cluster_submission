@@ -528,7 +528,7 @@ def submit_job(queue, jobname, nosubmit, keep):
     """Submit job to queue if submit flag is on. Keep or delete after submission."""
     if nosubmit:
         return
-    if queue in ["leibniz_pbs", "hopper"]:
+    if queue in ["leibniz_pbs", "hopper", "breniac"]:
         job = f"{jobname}.pbs"
         submit = shlex.split(f"qsub {job}")
     else:
@@ -708,7 +708,7 @@ if __name__ == "__main__":
     tasks = int(resources[args.queue]["cores"]/int(args.openMP)*int(args.nodes))
     tasks_per_node = int(resources[args.queue]["cores"]/int(args.openMP))
     omp = args.openMP
-    if args.queue in ["leibniz_pbs", "hopper"]:
+    if args.queue in ["leibniz_pbs", "hopper", "breniac"]:
         extension = "pbs"
     else:
         extension = "sh"
