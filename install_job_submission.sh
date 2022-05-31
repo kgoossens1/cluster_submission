@@ -21,7 +21,7 @@ read -p "About to create directory '$VSC_HOME/reports' where job reports are wri
 if [[ $alt_reports == y || $alt_reports == "yes" ]] ; then
     read -p "Please input the full path to the directory for writing job reports: " reports_dir
     sed -i 's|os\.path\.join(homedir,\ "reports")|${reports_dir}' $VSC_HOME/scripts/submit_job.py
-    echo "Report path changed to '$reports_dir'."
+    echo -e "Report path changed to '$reports_dir'."
 else
     mkdir -p $VSC_HOME/reports
 
