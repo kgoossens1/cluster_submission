@@ -44,10 +44,9 @@ sleep 2
 echo "Installation complete."
 sleep 2
 
-read -p "Do you want to remove this installing script and folder? " remove_script
+read -p "Do you want to remove this installing script? " remove_script
 if [[ $remove_script == y || $remove_script == "yes" ]] ; then
     echo "Removing install script..."
     chmod 777 .git/objects/*/*
-    cd ..
-    rm -r cluster_submission
+    rm -r *
 fi
