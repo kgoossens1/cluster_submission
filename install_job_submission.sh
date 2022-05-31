@@ -2,8 +2,8 @@
 
 echo -e "Installing job submission script...\n"
 mkdir -p $VSC_HOME/scripts
-mv $VSC_HOME/submit_jobs.py $VSC_HOME/scripts/
-mv $VSC_HOME/autocomplete_submit_job.sh $VSC_HOME/scripts/
+mv ./submit_jobs.py $VSC_HOME/scripts/
+mv ./autocomplete_submit_job.sh $VSC_HOME/scripts/
 source $VSC_HOME/scripts/autocomplete_submit_job.sh
 
 shopt -s nocasematch
@@ -37,10 +37,11 @@ read -p "Do you have an active project on the Breniac cluster? If yes, answer wi
 
 echo "Installation complete."
 
-read -p "Do you want to remove this installing script? " remove_script
+read -p "Do you want to remove this installing script and folder? " remove_script
 if [[ $remove_script == y || $remove_script == "yes" ]] ; then
     echo "Removing install script..."
-    rm $VSC_HOME/install_job_submission.sh
+    cd ..
+    rm -r cluster_submission
 fi
 
 
