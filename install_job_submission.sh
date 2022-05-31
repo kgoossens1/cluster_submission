@@ -2,7 +2,7 @@
 
 echo -e "Installing job submission script...\n"
 mkdir -p $VSC_HOME/scripts
-mv ./submit_jobs.py $VSC_HOME/scripts/
+mv ./submit_job.py $VSC_HOME/scripts/
 mv ./autocomplete_submit_job.sh $VSC_HOME/scripts/
 source $VSC_HOME/scripts/autocomplete_submit_job.sh
 
