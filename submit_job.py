@@ -581,7 +581,7 @@ if __name__ == "__main__":
     parser.add_argument("-pp", "--path_parameters",
                         dest="parampath",
                         type=str,
-                        default=os.path.join(os.path.abspath(os.path.dirname(__file__)), "parameter_files"),
+                        default=os.path.join(homedir, "parameter_files"),
                         help=("The path to where the simulation parameters are. Default"
                         " is the 'parameter_files' folder within the folder of this script. Option 'input' " 
                         "uses same directory as input files. Only required for gromacs and amber jobs."),
@@ -727,7 +727,7 @@ if __name__ == "__main__":
         args.outpath = wd
     if args.parampath == "input":
         args.parampath = wd
-    elif args.parampath == os.path.join(os.path.abspath(os.path.dirname(__file__)), "parameter_files"):
+    elif args.parampath == os.path.join(homedir, "parameter_files"):
         pass 
     else:
         args.parampath = os.path.join(basedir, args.parampath)
