@@ -352,41 +352,32 @@ class Gaussian_variables:
 
     def gaussian_commands(self):
         commands = []
-        tmp_count = 0
-        copy_tmp = f"cp {self.path}/${{job_name}}.com {self.path}/${{job_name}}.com.tmp.{tmp_count}"
         if hasattr(self, "checkpoint"):
-            tmp_count += 1
-            change_chk_path = f"cat {self.path}/${{job_name}}.com.tmp.{tmp_count-1} | sed -e '/[cC][hH][kK]=.*/d' -e '1 a\%Chk={self.outputpath}/{self.checkpoint}' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+            change_chk_path = f"sed -i '/[cC][hH][kK]=.*/d ; 1 a\%Chk={self.outputpath}/{self.checkpoint}' {self.path}/${{job_name}}.com"
         else:
             change_chk_path = ""
         if self.restartflag and hasattr(self, "checkpoint"):
-            set_restart = f"sed -i 's/[oO][pP][tT]=(/opt=(restart,/' {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+            set_restart = f"sed -i 's/[oO][pP][tT]=(/opt=(restart,/' {self.path}/${{job_name}}.com"
 #only restarts geometry optimization
         else:
             set_restart = ""
-        tmp_count += 1
-        change_proc = f"cat {self.path}/${{job_name}}.com.tmp.{tmp_count-1} | sed -e 's/[cC][pP][uU]=.*/CPU=0-{self.procs-1}/g' -e 's/[nN][pP][rR][oO][cC]=.*/CPU=0-{self.procs-1}/g' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+        change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{self.procs-1}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{self.procs-1}/g' {self.path}/${{job_name}}.com"
         if self.runtype == "gpu":
-            tmp_count += 1
             if self.nodes == 1:
-                set_gpus = f"cat {self.path}/${{job_name}}.com.tmp.{tmp_count-1} | sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0=0' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+                set_gpus = f"sed -i '/[gG][pP][uU][cC][pP][uU]/d ; /%[cC][pP][uU]=/a %GPUCPU=0=0' {self.path}/${{job_name}}.com"
             elif self.nodes == 2:
-                set_gpus = f"cat {self.path}/${{job_name}}.com.tmp.{tmp_count-1} | sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0,1=0,14' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+                set_gpus = f"sed -i '/[gG][pP][uU][cC][pP][uU]/d ; /%[cC][pP][uU]=/a %GPUCPU=0,1=0,14' {self.path}/${{job_name}}.com"
         else:
             set_gpus = ""
-        tmp_count += 1
-        change_mem = f"cat {self.path}/${{job_name}}.com.tmp.{tmp_count-1} | sed -e '/[mM][eE][mM]=.*[Bb]/d' -e '2 a\%mem={self.mem}GB' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+        change_mem = f"sed -i '/[mM][eE][mM]=.*[Bb]/d ; 2 a\%mem={self.mem}GB' {self.path}/${{job_name}}.com"
         commands = f"""
 job_name='{self.filename.rsplit(".",1)[0]}'\n
 export GAUSS_SCRDIR=$VSC_SCRATCH_NODE
-{copy_tmp}
 {change_chk_path}
 {set_restart}
 {change_proc}
 {set_gpus}
 {change_mem}
-cp {self.path}/${{job_name}}.com.tmp.{tmp_count} {self.path}/${{job_name}}.com
-rm {self.path}/${{job_name}}.com.tmp*
 g16 {self.path}/${{job_name}}.com\n
         """
         return commands
