@@ -161,7 +161,7 @@ cd ..
     def sed_commands(self):
         commands = []
         if self.restartflag:
-            restart_command = shlex.split(f"sed -i 's/-O/-A/g' {script_dir}/{args.jobname}.{extension}")
+            restart_command = shlex.split(f"sed -i 's/-O/-A/g' {homedir}/{args.jobname}.{extension}")
             commands.append(restart_command)
         for command in commands:
             process = subprocess.Popen(command)
@@ -314,10 +314,10 @@ cd ..\n
     def sed_commands(self):
         commands = []
         if hasattr(self, "index"):
-            index_command = shlex.split(f"sed -i 's|-r|-n\ {self.toppath}/{self.index}\ -r|g' {script_dir}/{args.jobname}.{extension}")
+            index_command = shlex.split(f"sed -i 's|-r|-n\ {self.toppath}/{self.index}\ -r|g' {homedir}/{args.jobname}.{extension}")
             commands.append(index_command)
         if hasattr(self, "plumed"):
-            plumed_command = shlex.split(f"sed -i 's|-t|-plumed\ {self.path}/{self.plumed}\ -t|g' {script_dir}/{args.jobname}.{extension}")
+            plumed_command = shlex.split(f"sed -i 's|-t|-plumed\ {self.path}/{self.plumed}\ -t|g' {homedir}/{args.jobname}.{extension}")
             commands.append(plumed_command)
         for command in commands:
             process = subprocess.Popen(command)
@@ -352,24 +352,30 @@ class Gaussian_variables:
 
     def gaussian_commands(self):
         commands = []
-        if self.runtype == "gpu":
-            if self.nodes == 1:
-                set_gpus = f"sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0=0' {self.path}/${{job_name}}.com > {self.path}/${{job_name}}.com"
-            elif self.nodes == 2:
-                set_gpus = f"sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0,1=0,14' {self.path}/${{job_name}}.com > {self.path}/${{job_name}}.com"
-        else:
-            set_gpus = ""
+        tmp_count = 0
+        copy_tmp = f"cp {self.path}/${{job_name}}.com {self.path}/${{job_name}}.com.tmp.{tmp.count}"
         if hasattr(self, "checkpoint"):
-            change_chk_path = f"sed -e '/[cC][hH][kK]=.*/d' -e '1 a\%Chk={self.outputpath}/{self.checkpoint}' {self.path}/${{job_name}}.com > {self.path}/${{job_name}}.com"
+            tmp_count += 1
+            change_chk_path = f"cat {self.path}/${{job_name}}.com.tmp.{tmp.count-1} | sed -e '/[cC][hH][kK]=.*/d' -e '1 a\%Chk={self.outputpath}/{self.checkpoint}' > {self.path}/${{job_name}}.com.tmp.{tmp.count}"
         else:
             change_chk_path = ""
         if self.restartflag and hasattr(self, "checkpoint"):
-            set_restart = f"sed -i 's/[oO][pP][tT]=(/opt=(restart,/' {self.path}/${{job_name}}.com"
+            set_restart = f"sed -i 's/[oO][pP][tT]=(/opt=(restart,/' {self.path}/${{job_name}}.com.tmp.{tmp.count}"
 #only restarts geometry optimization
         else:
             set_restart = ""
-        change_proc = f"sed -e 's/[cC][pP][uU]=.*/CPU=0-{self.procs-1}/g' -e 's/[nN][pP][rR][oO][cC]=.*/CPU=0-{self.procs-1}/g' {self.path}/${{job_name}}.com > {self.path}/${{job_name}}.com"
-        change_mem = f"sed -e '/[mM][eE][mM]=.*[Bb]/d' -e '2 a\%mem={self.mem}GB' {self.path}/${{job_name}}.com > {self.path}/${{job_name}}.com"
+        tmp_count += 1
+        change_proc = f"cat {self.path}/${{job_name}}.com.tmp.{tmp.count-1} | sed -e 's/[cC][pP][uU]=.*/CPU=0-{self.procs-1}/g' -e 's/[nN][pP][rR][oO][cC]=.*/CPU=0-{self.procs-1}/g' > {self.path}/${{job_name}}.com.tmp.{tmp.count}"
+        if self.runtype == "gpu":
+            tmp_count += 1
+            if self.nodes == 1:
+                set_gpus = f"cat {self.path}/${{job_name}}.com.tmp.{tmp.count-1} | sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0=0' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+            elif self.nodes == 2:
+                set_gpus = f"cat {self.path}/${{job_name}}.com.tmp.{tmp.count-1} | sed -e '/[gG][pP][uU][cC][pP][uU]/d' -e '/%[cC][pP][uU]=/a %GPUCPU=0,1=0,14' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
+        else:
+            set_gpus = ""
+        tmp_count += 1
+        change_mem = f"cat {self.path}/${{job_name}}.com.tmp.{tmp.count-1} | sed -e '/[mM][eE][mM]=.*[Bb]/d' -e '2 a\%mem={self.mem}GB' > {self.path}/${{job_name}}.com.tmp.{tmp_count}"
         commands = f"""
 job_name='{self.filename.rsplit(".",1)[0]}'\n
 export GAUSS_SCRDIR=$VSC_SCRATCH_NODE
@@ -378,6 +384,8 @@ export GAUSS_SCRDIR=$VSC_SCRATCH_NODE
 {change_proc}
 {set_gpus}
 {change_mem}
+cp {self.path}/${{job_name}}.com.tmp.{tmp_count} cp {self.path}/${{job_name}}.com
+rm cp {self.path}/${{job_name}}.com.tmp*
 g16 {self.path}/${{job_name}}.com\n
         """
         return commands
@@ -487,7 +495,7 @@ def load_modules(queue, software, runtype, plumed):
 def get_commands(software, queue, nodes, path, outpath, runtype,
         simtype, inputfiles, toppath, parampath, restart, plumed):
     """Write the execution commands for requested task and resources."""
-    commands = f"\nmkdir {outpath}; cd {outpath}\n"
+    commands = f"\nmkdir -p {outpath}; cd {outpath}\n"
     if software == "gaussian":
         gaussian = Gaussian_variables(queue, nodes, path, outpath, runtype, inputfiles, restart)
         commands += gaussian.gaussian_commands()
@@ -511,7 +519,7 @@ def write_jobscript(path, jobname, queue, software, runtype, nodes):
     """Combine strings into submission script."""
     print(f"writing script for submitting {software} job using {runtype}s on {nodes} {queue} node(s)... ('{jobname}.{extension}')")
     script_content = header + modules + commands
-    with open(f"{script_dir}/{jobname}.{extension}", "w") as file:
+    with open(f"{homedir}/{jobname}.{extension}", "w") as file:
         file.write(script_content)
 
 def mod_jobscript(software, path, outpath, runtype, simtype, inputfiles, toppath, parampath, restart, plumed): 
@@ -534,20 +542,20 @@ def submit_job(queue, jobname, nosubmit, keep):
     else:
         job = f"{jobname}.sh"
         if queue == "gpu":
-            submit = shlex.split(f"sbatch -p pascal_gpu {script_dir}/{job}")
+            submit = shlex.split(f"sbatch -p pascal_gpu {homedir}/{job}")
         else:
-            submit = shlex.split(f"sbatch {script_dir}/{job}")
+            submit = shlex.split(f"sbatch {homedir}/{job}")
     process = subprocess.Popen(submit)
     if keep:
         sys.exit()
     time.sleep(1)
-    os.remove(f"{script_dir}/{job}")
+    os.remove(f"{homedir}/{job}")
     return 
 
 if __name__ == "__main__":
     basedir = os.environ["VSC_SCRATCH"]
     homedir = os.environ["VSC_HOME"]
-    script_dir = os.path.abspath(os.path.dirname(__file__)) 
+#    script_dir = os.path.abspath(os.path.dirname(__file__)) 
     parser = ArgumentParser(formatter_class=SmartFormatter)
     requiredNamed = parser.add_argument_group('required arguments')                        
     requiredNamed.add_argument("-q", "--queue",
@@ -757,8 +765,6 @@ if __name__ == "__main__":
             sys.exit(0)
         if args.software == "amber":
             pass
-#            print("WARNING: Amber support for GPU calculations is currently not available. \nTerminating...")
-#            sys.exit(0)
         if args.software == "gaussian":
             print("WARNING: GPU calculations are not possible with curren NVIDIA Tesla A100/P100 GPUs (Vaughan) because they do not have enough memory. \nContinuing...")
     if args.software == "amber":

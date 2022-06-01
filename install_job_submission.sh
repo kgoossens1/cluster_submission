@@ -21,7 +21,7 @@ sleep 2
 read -p $'About to create directory "$VSC_HOME/reports" where job reports are written by default.\x0aThe directory can also be chosen using command line option "-pr" during execution.\x0aDo you wish to use a different default directory?(yes/no)\x0a' alt_reports
 if [[ $alt_reports == y || $alt_reports == "yes" ]] ; then
     read -p "Please input the full path to the directory for writing job reports: " reports_dir
-    sed -i "s|os.path.join(homedir, 'reports')|${reports_dir}|" $VSC_HOME/scripts/submit_job.py
+    sed -i "s|os.path.join(homedir, 'reports')|'${reports_dir}'|" $VSC_HOME/scripts/submit_job.py
     echo -e "Report path changed to '$reports_dir'.\n"
 else
     mkdir -p $VSC_HOME/reports
