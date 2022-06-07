@@ -12,55 +12,19 @@ import sys
 import subprocess
 import shlex
 import time
+import yaml
 from argparse import ArgumentParser, HelpFormatter
 
 __author__ = "Kenneth Goossens"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "goossens_kenny@hotmail.com"
 
 """
 Core information about the different clusters and modules is gathered in 
-dictionaries. Any updates to modules or clusters can easily be modified
-here and should be consistent through the tool. 
+yml dictionaries. Any updates to modules or clusters can easily be modified
+there and should be consistent through the tool. 
 """
 
-resources = {
-             "leibniz_pbs" : {"cores" : 28, "memory" : 4, "time" : "72:00:00"},
-             "leibniz_slurm" : {"cores" : 28, "memory" : 4, "time" : "72:00:00"},
-             "vaughan" : {"cores" : 64, "memory": 3 , "time" : "72:00:00"},
-             "hopper" : {"cores" : 20, "memory" : 10, "time" : "168:00:00"},
-             "breniac" : {"cores" : 28, "memory" : 4, "time" : "72:00:00", "project_name": "prj_name"},             
-             "gpu" : {"cores" : 14, "memory" : 2.5, "time" : "24:00:00"} #pascal gpu has 40 GB memory, ampere gpu 16 GB
-            }
-#adjust to use separate gpu resources for vaughan and leibniz gpus once in place
-modules = {
-           "general" : "calcua/supported",
-           "vaughan" : "vaughan/2020a",
-           "leibniz" : "leibniz/2020a",
-#           "gpu" : "torque-tools",
-# software : {runtype : {cluster : module}}
-           "gromacs" : {"cpu" : "GROMACS/2021.1-intel-2020a.04-UArecipe",
-                       "gpu" : "GROMACS/2021.1-intel-2020a-UArecipe-CUDA",
-                       "plumed" : "GROMACS/2019.4-intel-2020a-PLUMED-2.6.1-UArecipe"},
-           "amber" : {"cpu" : "Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10",
-                      "gpu" : "Amber/20-intel-2020a-AmberTools-21-patchlevel-12-12-CUDA"},
-           "gaussian": {"cpu" : "Gaussian/g16_c01-avx2",
-                        "gpu" : "Gaussian/g16_c01-avx2"}
-          }
-#requires outdated modules for hopper
-hopper_modules = {
-                  "general" : "calcua/supported",
-                  "gromacs" : {"cpu" : "GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe",
-                               "plumed" : "GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe"},
-                  "amber" : {"cpu" : "Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10",
-                             "gpu" : "Amber/20-intel-2019b-AmberTools-20-patchlevel-6-11-CUDA"},
-                  "gaussian": {"cpu" : "Gaussian/g16_A3-AVX2",
-                               "gpu" : "Gaussian/g16_A3-AVX2"}
-                 }
-
-breniac_modules = {"gromacs" : {"cpu" : "GROMACS/2020.1-intel-2019b"},
-                   "amber": {"cpu" : "Amber/18-intel2019b"}
-                  }
 #Smart parser for newlines
 class SmartFormatter(HelpFormatter):
     def _split_lines(self, text, width):
@@ -465,22 +429,22 @@ def load_modules(queue, software, runtype, plumed):
     """Load required modules for requested task, cluster and resources"""
     module_load = "\n"
     if queue == "hopper":
-        module_load += f"module load {hopper_modules['general']}\n"
+        module_load += f"module load {modules['hopper_modules']['general']}\n"
         if plumed:
-            module_load += f"module load {hopper_modules[software]['plumed']}\n"
+            module_load += f"module load {modules['hopper_modules'][software]['plumed']}\n"
         else:
-            module_load += f"module load {hopper_modules[software][runtype]}\n"
+            module_load += f"module load {modules['hopper_modules'][software][runtype]}\n"
     elif queue == "breniac":
-        module_load += f"module load {breniac_modules[software][runtype]}\n"
+        module_load += f"module load {modules['breniac_modules'][software][runtype]}\n"
     else:
-        module_load += f"module load {modules['general']}\n"
+        module_load += f"module load {modules['modules']['general']}\n"
         if plumed:
-            module_load += f"module load {modules[software]['plumed']}\n"
+            module_load += f"module load {modules['modules'][software]['plumed']}\n"
         else:
-            module_load += f"module load {modules[software][runtype]}\n"
+            module_load += f"module load {modules['modules'][software][runtype]}\n"
 # specific modules to load for gpu usage
 #        if runtype == "gpu":
-#            module_load += f"module load {modules[runtype]}\n"
+#            module_load += f"module load {modules['modules'][runtype]}\n"
         module_load += "\n"
     return module_load
 
@@ -547,7 +511,11 @@ def submit_job(queue, jobname, nosubmit, keep):
 if __name__ == "__main__":
     basedir = os.environ["VSC_SCRATCH"]
     homedir = os.environ["VSC_HOME"]
-#    script_dir = os.path.abspath(os.path.dirname(__file__)) 
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    with open((os.path.join(script_dir, "modules.yml")), "r") as file:
+        modules = yaml.safe_load(file)
+    with open((os.path.join(script_dir, "resources.yml")), "r") as file:
+        resources = yaml.safe_load(file)
     parser = ArgumentParser(formatter_class=SmartFormatter)
     requiredNamed = parser.add_argument_group('required arguments')                        
     requiredNamed.add_argument("-q", "--queue",

@@ -1,0 +1,27 @@
+leibniz_pbs:
+    cores: 28
+    memory: 4
+    time: 72:00:00
+leibniz_slurm:
+    cores: 28 
+    memory: 4
+    time: 72:00:00
+vaughan:
+    cores: 64
+    memory: 3 
+    time: 72:00:00
+hopper:
+    cores: 20 
+    memory: 10 
+    time: 168:00:00
+breniac: 
+    cores: 28 
+    memory: 4 
+    time: 72:00:00 
+    project_name: prj_name             
+gpu:
+    cores: 14 
+    memory: 2.5
+    time: 24:00:00 
+#adjust to use separate gpu resources for vaughan and leibniz gpus once in place
+

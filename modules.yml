@@ -1,0 +1,34 @@
+modules:
+    general: calcua/supported
+    vaughan: vaughan/2020a
+    leibniz: leibniz/2020a
+# new format --> software : {runtype : {cluster : module}}
+    gromacs:
+        cpu: GROMACS/2021.1-intel-2020a.04-UArecipe
+        gpu: GROMACS/2021.1-intel-2020a-UArecipe-CUDA
+        plumed: GROMACS/2019.4-intel-2020a-PLUMED-2.6.1-UArecipe
+    amber:
+        cpu: Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10
+        gpu: Amber/20-intel-2020a-AmberTools-21-patchlevel-12-12-CUDA
+    gaussian:
+        cpu: Gaussian/g16_c01-avx2
+        gpu: Gaussian/g16_c01-avx2
+
+#requires outdated modules for hopper
+hopper_modules:
+    general: calcua/supported
+    gromacs:
+        cpu: GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe
+    plumed: GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe
+    amber:
+        cpu: Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10
+        gpu: Amber/20-intel-2019b-AmberTools-20-patchlevel-6-11-CUDA
+    gaussian:
+        cpu: Gaussian/g16_A3-AVX2
+        gpu: Gaussian/g16_A3-AVX2
+             
+breniac_modules:
+    gromacs:
+        cpu: GROMACS/2020.1-intel-2019b}
+    amber:
+        cpu: Amber/18-intel2019b

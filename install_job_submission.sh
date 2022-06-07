@@ -4,6 +4,7 @@ echo -e "Installing job submission script...\n"
 mkdir -p $VSC_HOME/scripts
 mv ./submit_job.py $VSC_HOME/scripts/
 mv ./autocomplete_submit_job.sh $VSC_HOME/scripts/
+mv ./*.yml $VSC_HOME/scripts/
 source $VSC_HOME/scripts/autocomplete_submit_job.sh
 
 shopt -s nocasematch
@@ -36,7 +37,7 @@ read -p "Do you have an active project on the Breniac cluster? If yes, answer wi
     if [[ $prj_name == n || $prj_name == "no" ]] ; then
         echo "No project added. If you have an active project in the future, you can provide the name in the future through the command line option '-A' during execution."
     else
-        sed -i "s/prj_name/${prj_name}/g" $VSC_HOME/scripts/submit_job.py
+        sed -i "s/prj_name/${prj_name}/g" $VSC_HOME/scripts/resources.yml
         echo -e "The project name has been implemented. This project name will automatically be used when submitting jobs to the Breniac cluster.\nYou can also provide a different name in the future through the command line option '-A' during execution."
     fi
 sleep 2
