@@ -384,18 +384,19 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
         """
         if mail == True:
             header += "\n#SBATCH --mail-type=BEGIN,FAIL,END\n"
-    elif queue == "hopper": #leibniz partition, 8 nodes, 20 cores per node, 256 GB RAM, max. job time of 7 days, Torque
+    elif queue == "hopper": #leibniz partition, 24 nodes, 20 cores per node, 256 GB RAM, max. job time of 7 days, Slurm
         header = f"""#!/bin/bash\n
-#PBS -L tasks={tasks}:lprocs={omp}:memory=10gb
-#PBS -W x=template:singleswitch
-#PBS -l walltime={walltime}
-#PBS -N {jobname}
-#PBS -o {reportpath}/{jobname}.out
-#PBS -e {reportpath}/{jobname}.err
-#PBS -q hopper
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={tasks_per_node}
+#SBATCH --cpus-per-task={omp}
+#SBATCH --time={walltime}
+#SBATCH --job-name={jobname}
+#SBATCH --output={reportpath}/{jobname}.out
+#SBATCH --error={reportpath}/{jobname}.err
+#SBATCH --partition ivybridge
         """
         if mail == True:
-            header += "\n#PBS -m abe\n"
+            header += "\n#SBATCH --mail-type=BEGIN,FAIL,END\n"
     elif queue == "breniac": #Tier-1 cluster, 988 nodes, 28 cores per node, RAM varies from 128 to 256 GB, max job time of 3 days, Torque
         header = f"""#!bin/bash\n
 #PBS -l nodes={nodes}:ppn={tasks_per_node}:singleisland
@@ -492,7 +493,7 @@ def submit_job(queue, jobname, nosubmit, keep):
     """Submit job to queue if submit flag is on. Keep or delete after submission."""
     if nosubmit:
         return
-    if queue in ["leibniz_pbs", "hopper", "breniac"]:
+    if queue in ["leibniz_pbs", "breniac"]:
         job = f"{jobname}.pbs"
         submit = shlex.split(f"qsub {job}")
     else:
@@ -502,11 +503,34 @@ def submit_job(queue, jobname, nosubmit, keep):
         else:
             submit = shlex.split(f"sbatch {homedir}/{job}")
     process = subprocess.Popen(submit)
+    print_partition_info(queue)
     if keep:
         sys.exit()
     time.sleep(1)
     os.remove(f"{homedir}/{job}")
     return 
+
+def print_partition_info(queue):
+    print("job submitted.")
+    print('Queue state:\nPARTITION\tAVAIL\t     NODES\t   STATE')
+    if queue in ["breniac", "leibniz_pbs"]:
+        command1 = "showq"
+        command2 = shlex.split("grep ' active'")
+        p1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
+        subprocess.Popen(command2, stdin=p1.stdout)
+    else:    
+        with open("partitions.yml", "r") as file:
+            partitions = yaml.safe_load(file)
+            for partition in partitions[queue]:
+                command1 = shlex.split(f"sinfo -p {partition}")
+                command2 = shlex.split(f"grep {partition}")
+                command3 = shlex.split("awk '{print $1, $2, $4, $5}'")
+                p1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(command2, stdin=p1.stdout, stdout=subprocess.PIPE)
+                p3 = subprocess.Popen(command3, stdin=p2.stdout, stdout=subprocess.PIPE)
+                output = p3.stdout.read().decode("UTF-8")
+                print(output.replace(" ", "\t".expandtabs(12)))
+    return
 
 if __name__ == "__main__":
     basedir = os.environ["VSC_SCRATCH"]
@@ -676,7 +700,7 @@ if __name__ == "__main__":
     tasks = int(resources[args.queue]["cores"]/int(args.openMP)*int(args.nodes))
     tasks_per_node = int(resources[args.queue]["cores"]/int(args.openMP))
     omp = args.openMP
-    if args.queue in ["leibniz_pbs", "hopper", "breniac"]:
+    if args.queue in ["leibniz_pbs", "breniac"]:
         extension = "pbs"
     else:
         extension = "sh"
