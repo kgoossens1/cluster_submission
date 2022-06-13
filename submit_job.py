@@ -3,8 +3,8 @@
 """
 This is a tool with the purpose of submitting jobs to the UAntwerp clusters.
 Currently supporting job submission of Gaussian, Gromacs and Amber jobs to
-the tier-2 cluster Hopper, Leibniz and Vaughan (both GPU and CPU nodes). 
-Future expansion to tier-1 cluster Breniac and tier-0 cluster LUMI.
+the tier-2 cluster Hopper, Leibniz and Vaughan (both GPU and CPU nodes) and
+the tier-1 cluster Breniac. 
 """
 
 import os
@@ -16,7 +16,7 @@ import yaml
 from argparse import ArgumentParser, HelpFormatter
 
 __author__ = "Kenneth Goossens"
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __email__ = "goossens_kenny@hotmail.com"
 
 """
@@ -330,7 +330,7 @@ class Gaussian_variables:
             if self.nodes == 1:
                 set_gpus = f"sed -i '/[gG][pP][uU][cC][pP][uU]/d' {self.path}/${{job_name}}.com; sed -i '/%[cC][pP][uU]=/a %GPUCPU=0=0' {self.path}/${{job_name}}.com"
             elif self.nodes == 2:
-                set_gpus = f"sed -i '/[gG][pP][uU][cC][pP][uU]/d' {self.path}/${{job_name}}.com; sed -i '/%[cC][pP][uU]=/a %GPUCPU=0,1=0,14' {self.path}/${{job_name}}.com"
+                set_gpus = f"sed -i '/[gG][pP][uU][cC][pP][uU]/d' {self.path}/${{job_name}}.com; sed -i '/%[cC][pP][uU]=/a %GPUCPU=0,1=0,16' {self.path}/${{job_name}}.com"
         else:
             set_gpus = ""
         change_mem = f"sed -i '/[mM][eE][mM]=.*[Bb]/d' {self.path}/${{job_name}}.com; sed -i '/CPU=0/a %mem={self.mem}GB' {self.path}/${{job_name}}.com"
@@ -348,7 +348,7 @@ g16 {self.path}/${{job_name}}.com\n
 
 def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, mail, reportpath):
     """Check queue type and create appropriate header for submission script."""
-    if queue == "leibniz_slurm": #leibniz partition, 152 nodes (115 upgraded), 28 cores per node, 128 GB RAM, max. job time of 3 days, Slurm/Torque
+    if queue == "leibniz_slurm": #leibniz partition, 148 nodes, 28 cores per node, 128 GB RAM, max. job time of 3 days, Slurm
         header = f"""#!/bin/bash\n
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={tasks_per_node}
@@ -360,7 +360,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
         """
         if mail == True:
             header += "\n#SBATCH --mail-type=BEGIN,FAIL,END\n"
-    elif queue == "leibniz_pbs": #leibniz partition, 152 nodes (37 Torque), 28 cores per node, 128 GB RAM, max. job time of 3 days, Slurm/Torque
+    elif queue == "leibniz_pbs": #leibniz partition, completely transfered to Slurm.
         header = f"""#!/bin/bash\n
 #PBS -L tasks={tasks}:lprocs={omp}:memory={memory}gb
 #PBS -W x=template:singleswitch
@@ -384,7 +384,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
         """
         if mail == True:
             header += "\n#SBATCH --mail-type=BEGIN,FAIL,END\n"
-    elif queue == "hopper": #leibniz partition, 24 nodes, 20 cores per node, 256 GB RAM, max. job time of 7 days, Slurm
+    elif queue == "hopper": #leibniz partition, 23 nodes, 20 cores per node, 256 GB RAM, max. job time of 7 days, Slurm
         header = f"""#!/bin/bash\n
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={tasks_per_node}
@@ -397,7 +397,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
         """
         if mail == True:
             header += "\n#SBATCH --mail-type=BEGIN,FAIL,END\n"
-    elif queue == "breniac": #Tier-1 cluster, 988 nodes, 28 cores per node, RAM varies from 128 to 256 GB, max job time of 3 days, Torque
+    elif queue == "breniac": #Tier-1 cluster, 409 nodes, 28 cores per node, RAM varies from 128 to 256 GB, max job time of 3 days, Torque
         header = f"""#!bin/bash\n
 #PBS -l nodes={nodes}:ppn={tasks_per_node}:singleisland
 #PBS -l pmem=4gb
@@ -410,7 +410,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
         if mail == True:
             header += "\n#PBS -m abe\n"
 #GPU moved to slurm on leibniz, also gpu's on vaughan
-    elif queue == "gpu": #leibniz partition, 2 nodes, 28 cores per node, 2 gpus per node, max. job time of 1 day, Torque
+    elif queue in ["ampere_gpu", "pascal_gpu"]: 
         header = f"""#!/bin/bash\n
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={tasks_per_node}
@@ -419,7 +419,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
 #SBATCH --job-name={jobname}
 #SBATCH --output={reportpath}/{jobname}.out
 #SBATCH --error={reportpath}/{jobname}.err
-#SBATCH --partition pascal_gpu
+#SBATCH --partition {queue}
 #SBATCH --gres=gpu:{nodes}
         """
         if mail == True:
@@ -498,8 +498,8 @@ def submit_job(queue, jobname, nosubmit, keep):
         submit = shlex.split(f"qsub {job}")
     else:
         job = f"{jobname}.sh"
-        if queue == "gpu":
-            submit = shlex.split(f"sbatch -p pascal_gpu {homedir}/{job}")
+        if queue in ["pascal_gpu", "ampere_gpu":
+            submit = shlex.split(f"sbatch -p {queue} {homedir}/{job}")
         else:
             submit = shlex.split(f"sbatch {homedir}/{job}")
     process = subprocess.Popen(submit)
@@ -511,6 +511,10 @@ def submit_job(queue, jobname, nosubmit, keep):
     return 
 
 def print_partition_info(queue):
+    if queue == "pascal_gpu":
+        queue == "leibniz"
+    elif queue == "ampere_gpu":
+        queue == "vaughan"        
     print("job submitted.")
     print('Queue state:\nPARTITION\tAVAIL\t     NODES\t   STATE')
     if queue in ["breniac", "leibniz_pbs"]:
@@ -617,7 +621,6 @@ if __name__ == "__main__":
 #                        help="Run type (cpu or gpu).",
 #                        choices=["cpu", "gpu"],
 #                        metavar="RUNTYPE")
-#if more gpu nodes become available
     requiredNamed.add_argument("-x", "--software",
                         dest="software",
                         type=str,
@@ -728,7 +731,7 @@ if __name__ == "__main__":
     else:
         args.toppath = wd
 
-    if args.queue == "gpu":
+    if args.queue in ["pascal_gpu", "ampere_gpu"]:
         args.runtype = "gpu"
     else:
         args.runtype = "cpu"
@@ -743,7 +746,7 @@ if __name__ == "__main__":
             args.jobname = "amber_job"
 
 #Run functions
-    if args.queue == "gpu":
+    if args.queue in ["pascal_gpu", "ampere_gpu"]:
         if args.software == "gromacs":
             print("WARNING: Gromacs support for GPU calculations is currently not available. \nTerminating...")
             sys.exit(0)

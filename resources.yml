@@ -19,9 +19,15 @@ breniac:
     memory: 4 
     time: 72:00:00 
     project_name: prj_name             
-gpu:
-    cores: 14 
+pascal_gpu:
+    cores: 14                   #2 gpu's per node, 2 nodes
     memory: 2.5
-    time: 24:00:00 
-#adjust to use separate gpu resources for vaughan and leibniz gpus once in place
+    time: 24:00:00
+    cluster: leibniz_slurm
+ampere_gpu:
+    cores: 16                   #4 gpu's per node, 1 node
+    memory: 2.5
+    time: 24:00:00
+    cluster: vaughan
+#arcturus_gpu: 2 nodes, vaughan, gpu's per node? 
 
