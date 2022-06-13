@@ -318,7 +318,7 @@ class Gaussian_variables:
         commands = []
         change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{(self.procs/self.nodes)-1}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{(self.procs/self.nodes)-1}/g' {self.path}/${{job_name}}.com"
         if hasattr(self, "checkpoint"):
-            change_chk_path = f"sed -i '/[cC][hH][kK]=.*/d' {self.path}/${{job_name}}.com"; sed -i '/CPU=0/a %Chk={self.outputpath}\/{self.checkpoint}' {self.path}/${{job_name}}.com"
+            change_chk_path = f"sed -i '/[cC][hH][kK]=.*/d' {self.path}/${{job_name}}.com; sed -i '/CPU=0/a %Chk={self.outputpath}\/{self.checkpoint}' {self.path}/${{job_name}}.com"
         else:
             change_chk_path = ""
         if self.restartflag and hasattr(self, "checkpoint"):
@@ -498,7 +498,7 @@ def submit_job(queue, jobname, nosubmit, keep):
         submit = shlex.split(f"qsub {job}")
     else:
         job = f"{jobname}.sh"
-        if queue in ["pascal_gpu", "ampere_gpu":
+        if queue in ["pascal_gpu", "ampere_gpu"]:
             submit = shlex.split(f"sbatch -p {queue} {homedir}/{job}")
         else:
             submit = shlex.split(f"sbatch {homedir}/{job}")
