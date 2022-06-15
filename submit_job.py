@@ -316,7 +316,7 @@ class Gaussian_variables:
 
     def gaussian_commands(self):
         commands = []
-        change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{(self.procs/self.nodes)-1}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{(self.procs/self.nodes)-1}/g' {self.path}/${{job_name}}.com"
+        change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{int((self.procs/self.nodes)-1)}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{in((self.procs/self.nodes)-1)}/g' {self.path}/${{job_name}}.com"
         if hasattr(self, "checkpoint"):
             change_chk_path = f"sed -i '/[cC][hH][kK]=.*/d' {self.path}/${{job_name}}.com; sed -i '/CPU=0/a %Chk={self.outputpath}\/{self.checkpoint}' {self.path}/${{job_name}}.com"
         else:
