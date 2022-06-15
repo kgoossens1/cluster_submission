@@ -523,7 +523,7 @@ def print_partition_info(queue):
         p1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
         subprocess.Popen(command2, stdin=p1.stdout)
     else:    
-        with open("partitions.yml", "r") as file:
+        with open(os.path.join(script_dir,"partitions.yml"), "r") as file:
             partitions = yaml.safe_load(file)
             for partition in partitions[queue]:
                 command1 = shlex.split(f"sinfo -p {partition}")
