@@ -4,7 +4,7 @@ _submit_compl() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     opts1="-q -p -i -x -h -po -pp -pt -pr -o -n -A -m -wt -omp -s -restart -plumed -mail -keep -nosubmit"
-    opts2="vaughan leibniz_pbs leibniz_slurm hopper breniac pascal_gpu ampere_gpu"
+    opts2="vaughan leibniz_pbs leibniz_slurm hopper breniac pascal_gpu ampere_gpu arcturus_gpu"
     opts3="gromacs amber gaussian"
     opts4="min eq prod"
     opts5="-q -p -i -x -h -po -pp -pt -pr -o -n -A -m -wt -omp -s -restart -plumed -mail -keep -nosubmit min eq prod"

@@ -551,13 +551,15 @@ if __name__ == "__main__":
                         type=str,
                         help=("The name of the queue to which to submit the job. "
                         "Options are 'leibniz_pbs', 'leibniz_slurm', 'vaughan', "
-                        "'hopper', 'breniac', 'gpu'."),
+                        "'hopper', 'breniac', 'pascal_gpu', 'ampere_gpu', 'arcturus_gpu'."),
                         choices=["leibniz_pbs",
                                  "leibniz_slurm",
                                  "vaughan",
                                  "hopper",
                                  "breniac",
-                                 "gpu"],
+                                 "pascal_gpu",
+                                 "ampere_gpu"
+                                 "arcturus_gpu"],
                         metavar="QUEUE")
     requiredNamed.add_argument("-p", "--path",
                         dest="dirname",
