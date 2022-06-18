@@ -16,7 +16,7 @@ import yaml
 from argparse import ArgumentParser, HelpFormatter
 
 __author__ = "Kenneth Goossens"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "goossens_kenny@hotmail.com"
 
 """
@@ -511,10 +511,10 @@ def submit_job(queue, jobname, nosubmit, keep):
     return 
 
 def print_partition_info(queue):
-    if queue == "pascal_gpu":
-        queue == "leibniz"
+    if queue in ["pascal_gpu", "leibniz_slurm", "leibniz_pbs":
+        queue = "leibniz"
     elif queue == "ampere_gpu":
-        queue == "vaughan"        
+        queue = "vaughan"        
     print("job submitted.")
     print('Queue state:\nPARTITION\tAVAIL\t     NODES\t   STATE')
     if queue in ["breniac", "leibniz_pbs"]:
