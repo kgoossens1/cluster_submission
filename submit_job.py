@@ -337,9 +337,9 @@ class Gaussian_variables:
         commands = f"""
 job_name='{self.filename.rsplit(".",1)[0]}'\n
 export GAUSS_SCRDIR=$VSC_SCRATCH_NODE
-{change_chk_path}
 {set_restart}
 {change_proc}
+{change_chk_path}
 {set_gpus}
 {change_mem}
 g16 {self.path}/${{job_name}}.com\n
