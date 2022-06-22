@@ -13,19 +13,6 @@ modules:
     gaussian:
         cpu: Gaussian/g16_c01-avx2
         gpu: Gaussian/g16_c01-avx2
-
-#requires outdated modules for hopper
-hopper_modules:
-    general: calcua/supported
-    gromacs:
-        cpu: GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe
-    plumed: GROMACS/2019.4-intel-2018b-PLUMED-2.6.0-UArecipe
-    amber:
-        cpu: Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10
-        gpu: Amber/20-intel-2019b-AmberTools-20-patchlevel-6-11-CUDA
-    gaussian:
-        cpu: Gaussian/g16_A3-AVX2
-        gpu: Gaussian/g16_A3-AVX2
              
 breniac_modules:
     gromacs:

@@ -429,13 +429,7 @@ def queue_type(queue, nodes, openMP, memory, walltime, jobname, project_name, ma
 def load_modules(queue, software, runtype, plumed):
     """Load required modules for requested task, cluster and resources"""
     module_load = "\n"
-    if queue == "hopper":
-        module_load += f"module load {modules['hopper_modules']['general']}\n"
-        if plumed:
-            module_load += f"module load {modules['hopper_modules'][software]['plumed']}\n"
-        else:
-            module_load += f"module load {modules['hopper_modules'][software][runtype]}\n"
-    elif queue == "breniac":
+    if queue == "breniac":
         module_load += f"module load {modules['breniac_modules'][software][runtype]}\n"
     else:
         module_load += f"module load {modules['modules']['general']}\n"

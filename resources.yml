@@ -12,8 +12,8 @@ vaughan:
     time: "72:00:00"
 hopper:
     cores: 20 
-    memory: 10 
-    time: "168:00:00"
+    memory: 12 
+    time: "72:00:00"
 breniac: 
     cores: 28 
     memory: 4 
