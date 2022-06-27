@@ -5,7 +5,7 @@ modules:
 # new format --> software : {runtype : {cluster : module}}
     gromacs:
         cpu: GROMACS/2021.1-intel-2020a.04-UArecipe
-        gpu: GROMACS/2021.1-intel-2020a-UArecipe-CUDA
+        gpu: GROMACS/2021.1-intel-2020a.04-UArecipe-CUDA
         plumed: GROMACS/2019.4-intel-2020a-PLUMED-2.6.1-UArecipe
     amber:
         cpu: Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10

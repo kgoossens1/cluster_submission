@@ -180,26 +180,22 @@ class Gromacs_variables:
                     print(f"WARNING: file '{self.toppath}/{item}' not found. \nTerminating...")
                     sys.exit(0)
                 self.checkpoint = item
+        if self.runtype == "cpu":
+            self.run_exec = f"mpirun -np {tasks} gmx_mpi mdrun"
+        else:
+            self.run_exec = f"mpirun -np {tasks} gmx_mpi mdrun -ntomp {omp}"
+
         return
-#Combine GPU and CPU syntax (once GPU modules become available for testing)
     def min(self):
         if not os.path.exists(f"{self.mdppath}/em.mdp"):
             print(f"WARNING: file '{self.mdppath}/em.mdp' not found. \nTerminating...")
             sys.exit(0)
-        if self.runtype == "cpu":
-            min_command = f"""
+        min_command = f"""
 mkdir em; cd em
 gmx grompp -f {self.mdppath}/em.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -o em.tpr
-mpirun -np {tasks} gmx_mpi mdrun -deffnm em -pin on 
+{self.run_exec} -deffnm em -pin on
 cd ..
-            """
-        else:
-            min_command = f"""
-mkdir em; cd em
-gmx grompp -f {self.mdppath}/em.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -o em.tpr 
-mpirun -genv OMP_NUM_THREADS=$(torque-lprocs) -genv I_MPI_PIN_DOMAIN=omp -np $(torque-tasks) gmx_mpi mdrun -deffnm em -ntomp $(torque-lprocs) -pin on
-cd ..
-            """
+        """
         return min_command
 
     def eq(self):
@@ -210,29 +206,17 @@ cd ..
         if "min" in self.simtype:
             self.path = "../em"
             self.inputfile = "em.gro"
-        if self.runtype == "cpu":
-            eq_command = f"""
+        eq_command = f"""
 mkdir nvt; cd nvt
 gmx grompp -f {self.mdppath}/nvt.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
-mpirun -np {tasks} gmx_mpi mdrun -deffnm nvt -pin on
+{self.run_exec} -deffnm nvt -pin on
 cd ..\n
 mkdir npt; cd npt
 gmx grompp -f {self.mdppath}/npt.mdp -c ../nvt/nvt.gro -p {self.toppath}/{self.topology} -r ../nvt/nvt.gro -o npt.tpr -maxwarn 2
-mpirun -np {tasks} gmx_mpi mdrun -deffnm npt -pin on
+{self.run_exec} -deffnm npt -pin on
 cd ..\n
-            """
-        else:
-            eq_command = f"""
-mkdir nvt; cd nvt
-gmx grompp -f {self.mdppath}/nvt.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
-mpirun -genv OMP_NUM_THREADS=$(torque-lprocs) -genv I_MPI_PIN_DOMAIN=omp -np $(torque-tasks) gmx_mpi mdrun -deffnm nvt -ntomp $(torque-lprocs) -pin on
-cd ..\n
-mkdir npt; cd npt
-gmx grompp -f {self.mdppath}/npt.mdp -c ../nvt/nvt.gro -p {self.toppath}/{self.topology} -r ../nvt/nvt.gro -o npt.tpr -maxwarn 2
-mpirun -genv OMP_NUM_THREADS=$(torque-lprocs) -genv I_MPI_PIN_DOMAIN=omp -np $(torque-tasks) gmx_mpi mdrun -deffnm npt -ntomp $(torque-lprocs) -pin on
-cd ..\n
-            """
-        return eq_command 
+        """
+        return eq_command
 
     def prod(self):
         if not os.path.exists(f"{self.mdppath}/md.mdp"):
@@ -245,24 +229,16 @@ cd ..\n
             self.path = "../npt"
             self.inputfile = "npt.gro"
             self.checkpoint = "npt.cpt"
-        if self.runtype == "cpu":
-            prod_command = f"""
+        prod_command = f"""
 mkdir md; cd md
 gmx grompp -f {self.mdppath}/md.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -t {self.path}/{self.checkpoint} -r {self.path}/{self.inputfile} -o md.tpr -maxwarn 2
-mpirun -np {tasks} gmx_mpi mdrun -deffnm md -pin on
+{self.run_exec} -deffnm md -pin on
 cd ..\n
-            """
-        else:
-            prod_command = f"""
-mkdir md; cd md
-gmx grompp -f {self.mdppath}/md.mdp -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -t {self.path}/{self.checkpoint} -r {self.path}/{self.inputfile} -o md.tpr -maxwarn 2
-mpirun -genv OMP_NUM_THREADS=$(torque-lprocs) -genv I_MPI_PIN_DOMAIN=omp -np $(torque-tasks) gmx_mpi mdrun -deffnm md -ntomp $(torque-lprocs) -pin on
-cd ..\n
-            """
+        """
         return prod_command
-    
+
     def tpr(self):
-        tpr_command = f"mpirun -np {tasks} gmx_mpi mdrun -s {self.path}/{self.tprfile}.tpr -deffnm {self.tprfile} -pin on"
+        tpr_command = f"{self.run_exec} -s {self.path}/{self.tprfile}.tpr -deffnm {self.tprfile} -pin on"
         return tpr_command
 
     def restart(self):
@@ -272,7 +248,7 @@ cd ..\n
         if not hasattr(self, "checkpoint"):
             print("WARNING: chk file is required along with tpr file for restarting a simulation. \nTerminating...")
             sys.exit(0)
-        restart_command = f"mpirun -np {tasks} gmx_mpi mdrun -deffnm {self.path}/{self.tprfile} -cpi {self.checkpoint} -append yes -pin on"
+        restart_command = f"{self.run_exec} -deffnm {self.path}/{self.tprfile} -cpi {self.checkpoint} -append yes -pin on"
         return restart_command
 
     def sed_commands(self):
