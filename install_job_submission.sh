@@ -11,11 +11,12 @@ shopt -s nocasematch
 read -p "Do you want the alias 'submit_job' to be created automatically?: " create_alias
 
 if [[ $create_alias == y || $create_alias == "yes" ]] ; then
-    echo "Creating alias..."
+    echo -e "Creating alias...\n"
     echo "alias submit_job='python $VSC_HOME/scripts/submit_job.py'" >> $VSC_HOME/.bashrc
     echo "source '$VSC_HOME/scripts/autocomplete_submit_job.sh'" >> $VSC_HOME/.bashrc
+    source $vSC_HOME/.bashrc
 else
-    echo "Not creating an alias."
+    echo -e "Not creating an alias.\n"
 fi
 sleep 2
 
@@ -29,7 +30,7 @@ else
 fi
 sleep 2
 
-echo -e "Creating directory '$VSC_HOME/parameter_files' where simulation input files are looked for by default for Gromacs and Amber simulations.\nInput files should have names 'min', 'nvt', 'npt' and 'md' with *in or *mdp extensions. Files can be found in another directory using command line option '-pp' during execution..."
+echo -e "Creating directory '$VSC_HOME/parameter_files' where simulation input files are looked for by default for Gromacs and Amber simulations.\nInput files should have names 'min', 'nvt', 'npt' and 'md' with *in or *mdp extensions. Files can be found in another directory using command line option '-pp' during execution...\n"
 mkdir -p $VSC_HOME/parameter_files
 sleep 2
 
@@ -42,7 +43,7 @@ read -p "Do you have an active project on the Breniac cluster? If yes, answer wi
     fi
 sleep 2
 
-echo "Installation complete."
+echo -e "Installation complete.\n"
 sleep 2
 
 read -p "Do you want to remove this installing script? " remove_script
