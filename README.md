@@ -4,7 +4,7 @@ Submit Gromacs, Gaussian and Amber jobs to UA clusters.
 # Installation
 Download the code to your home directory on one of the clusters:
 ```
-git clone https://github.com/kgoossens1/cluster_submission .
+git clone https://github.com/kgoossens1/cluster_submission
 ```
 To install:
 ```
