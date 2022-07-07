@@ -117,12 +117,14 @@ mkdir npt; cd npt
 cd ..
             """
         elif hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
+            print("NOTE: Only an NVT equilibration will be ran, since there is no NPT parameter file present.")
             eq_command = f"""
 mkdir nvt; cd nvt
 {self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
 cd ..\n
             """
         else:
+            print("NOTE: Only an NPT equilibration will be ran, since there is no NVT parameter file present.")
             eq_command = f"""
 mkdir npt; cd npt
 {self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
@@ -264,6 +266,7 @@ gmx grompp -f {self.mdppath}/{self.nptfile} -c ../nvt/nvt.gro -p {self.toppath}/
 cd ..\n
             """
         elif hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
+            print("NOTE: Only an NVT equilibration will be ran, since there is no NPT parameter file present.")
             eq_command = f"""
 mkdir nvt; cd nvt
 gmx grompp -f {self.mdppath}/{self.nvtfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
@@ -271,6 +274,7 @@ gmx grompp -f {self.mdppath}/{self.nvtfile} -c {self.path}/{self.inputfile} -p {
 cd ..\n
             """
         else: 
+            print("NOTE: Only an NPT equilibration will be ran, since there is no NVT parameter file present.")
             eq_command = f"""
 mkdir npt; cd npt
 gmx grompp -f {self.mdppath}/{self.nptfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o npt.tpr -maxwarn 2
