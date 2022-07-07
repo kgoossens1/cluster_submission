@@ -140,7 +140,7 @@ cd ..\n
             self.path = "../em"
             self.inputfile = "em.rst7"
         if "eq" in self.simtype:
-            if hasattr(self, "nptfile):
+            if hasattr(self, "nptfile"):
                 self.path = "../npt"
                 self.inputfile = "npt.gro"
                 self.checkpoint = "npt.cpt"
