@@ -95,7 +95,7 @@ class Amber_variables(object):
             sys.exit(0)
         min_command = f"""
 mkdir em; cd em
-{self.run_exec} -O -i {self.inpath}/{self.minfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/min.log -r {self.outputpath}/min.rst7
+{self.run_exec} -O -i {self.inpath}/{self.minfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/em/min.out -r {self.outputpath}/min/min.rst7
 cd ..
         """
         return min_command
@@ -110,24 +110,24 @@ cd ..
         if hasattr(self, "nvtfile") and hasattr(self, "nptfile"):
             eq_command = f"""
 mkdir nvt; cd nvt
-{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt/nvt.out -r {self.outputpath}/nvt/nvt.rst7
 cd ..\n
 mkdir npt; cd npt
-{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c ../nvt/nvt.rst7 -ref ../nvt/nvt.rst7 -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c ../nvt/nvt.rst7 -ref ../nvt/nvt.rst7 -o {self.outputpath}/npt/npt.out -r {self.outputpath}/npt/npt.rst7
 cd ..
             """
         elif hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
             print("NOTE: Only an NVT equilibration will be ran, since there is no NPT parameter file present.")
             eq_command = f"""
 mkdir nvt; cd nvt
-{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt/nvt.out -r {self.outputpath}/nvt/nvt.rst7
 cd ..\n
             """
         else:
             print("NOTE: Only an NPT equilibration will be ran, since there is no NVT parameter file present.")
             eq_command = f"""
 mkdir npt; cd npt
-{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/npt/npt.out -r {self.outputpath}/npt/npt.rst7
 cd ..\n
             """        
         return eq_command
@@ -151,7 +151,7 @@ cd ..\n
 
         prod_command = f"""
 mkdir md; cd md
-{self.run_exec} -O -i {self.inpath}/{self.mdfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/md.log -r {self.outputpath}/md.rst7 -x md.nc 
+{self.run_exec} -O -i {self.inpath}/{self.mdfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/md/md.log -r {self.outputpath}/md/md.rst7 -x {self.outputpath}/md/md.nc 
 cd ..
             """
         return prod_command
@@ -782,7 +782,7 @@ if __name__ == "__main__":
     else:
         args.toppath = wd
 
-    if args.queue in ["pascal_gpu", "ampere_gpu"]:
+    if args.queue in ["pascal_gpu", "ampere_gpu", "arcturus_gpu"]:
         args.runtype = "gpu"
     else:
         args.runtype = "cpu"
@@ -797,7 +797,7 @@ if __name__ == "__main__":
             args.jobname = "amber_job"
 
 #Run functions
-    if args.queue in ["pascal_gpu", "ampere_gpu"]:
+    if args.queue in ["pascal_gpu", "ampere_gpu", "arcturus_gpu"]:
         if args.software == "gromacs":
             print("WARNING: Gromacs support for GPU calculations is currently not available. \nTerminating...")
             sys.exit(0)
