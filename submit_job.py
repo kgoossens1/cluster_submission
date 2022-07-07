@@ -79,7 +79,7 @@ class Amber_variables:
                     self.min = file
                 elif file.endswith("nvt.in"):
                     self.nvt = file
-                elif file.endswith("heat.in":
+                elif file.endswith("heat.in"):
                     self.nvt = file
                 elif file.endswith("npt.in"):
                     self.npt = file
@@ -101,9 +101,9 @@ cd ..
         return min_command
 
     def eq(self):
-            if not self.nvt or if not self.npt:
-                print(f"WARNING: No nvt or npt parameter file found in '{self.inpath}/'. \nTerminating...")
-                sys.exit(0)
+        if not self.nvt or not self.npt:
+            print(f"WARNING: No nvt or npt parameter file found in '{self.inpath}/'. \nTerminating...")
+            sys.exit(0)
         if "min" in self.simtype:
             self.path = "../em"
             self.inputfile = "em.rst7"
@@ -227,7 +227,7 @@ cd ..
         return min_command
 
     def eq(self):
-        if not self.nvt or if not self.npt:
+        if not self.nvt or not self.npt:
             print(f"WARNING: No nvt or npt parameter file found in '{self.mdppath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
