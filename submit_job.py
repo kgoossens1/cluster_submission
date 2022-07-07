@@ -66,7 +66,7 @@ class Amber_variables(object):
                     print(f"WARNING: file '{self.toppath}/{item}' not found. \nTerminating...")
                     sys.exit(0)
                 self.topology = item
-            if item.split(".")[-1] in ["rst7", "crd", "inpcrd", "ncrst"]:
+            if item.split(".")[-1] in ["rst7", "crd", "inpcrd", "ncrst", "rst"]:
                 if not os.path.exists(f"{self.path}/{item}"):
                     print(f"WARNING: file '{self.toppath}/{item}' not found. \nTerminating...")
                     sys.exit(0)
@@ -90,7 +90,7 @@ class Amber_variables(object):
         return
 
     def min(self):
-        if not self.minfile:
+        if not hasattr(self, "minfile"):
             print(f"WARNING: No minimization parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         min_command = f"""
@@ -101,33 +101,52 @@ cd ..
         return min_command
 
     def eq(self):
-        if not self.nvtfile or not self.nptfile:
+        if not hasattrr(self, "nvtfile") and not hasattr(self, "nptfile"):
             print(f"WARNING: No nvt or npt parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
             self.path = "../em"
             self.inputfile = "em.rst7"
-        eq_command = f"""
+        if hasattr(self, "nvtfile") and hasattr(self, "nptfile"):
+            eq_command = f"""
 mkdir nvt; cd nvt
 {self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
 cd ..\n
 mkdir npt; cd npt
 {self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c ../nvt/nvt.rst7 -ref ../nvt/nvt.rst7 -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
 cd ..
-        """
+            """
+        elif hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
+            eq_command = f"""
+mkdir nvt; cd nvt
+{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
+cd ..\n
+            """
+        else:
+            eq_command = f"""
+mkdir npt; cd npt
+{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
+cd ..\n
+            """        
         return eq_command
 
     def prod(self):
-        if not self.mdfile:
+        if not hasattr(self, "mdfile"):
             print(f"WARNING: No production parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
             self.path = "../em"
-            self.inputfile = "em.rst"
+            self.inputfile = "em.rst7"
         if "eq" in self.simtype:
-            self.path = "../npt"
-            self.inputfile = "npt.gro"
-            self.checkpoint = "npt.cpt"
+            if hasattr(self, "nptfile):
+                self.path = "../npt"
+                self.inputfile = "npt.gro"
+                self.checkpoint = "npt.cpt"
+            else:
+                self.path = "../nvt"
+                self.inputfile = "nvt.gro"
+                self.checkpoint = "nvt.cpt"
+
         prod_command = f"""
 mkdir md; cd md
 {self.run_exec} -O -i {self.inpath}/{self.mdfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/md.log -r {self.outputpath}/md.rst7 -x md.nc 
@@ -215,7 +234,7 @@ class Gromacs_variables(object):
                     self.mdfile = file
         return
     def min(self):
-        if not self.minfile:
+        if not hasattr(self, "minfile"):
             print(f"WARNING: No minimization parameter file file found in '{self.mdppath}/'. \nTerminating...")
             sys.exit(0)
         min_command = f"""
@@ -227,13 +246,14 @@ cd ..
         return min_command
 
     def eq(self):
-        if not self.nvtfile or not self.nptfile:
+        if not hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
             print(f"WARNING: No nvt or npt parameter file found in '{self.mdppath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
             self.path = "../em"
             self.inputfile = "em.gro"
-        eq_command = f"""
+        if hasattr(self, "nvtfile") and hasattr(self, "nptfile"):
+            eq_command = f"""
 mkdir nvt; cd nvt
 gmx grompp -f {self.mdppath}/{self.nvtfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
 {self.run_exec} -deffnm nvt -pin on
@@ -242,20 +262,39 @@ mkdir npt; cd npt
 gmx grompp -f {self.mdppath}/{self.nptfile} -c ../nvt/nvt.gro -p {self.toppath}/{self.topology} -r ../nvt/nvt.gro -o npt.tpr -maxwarn 2
 {self.run_exec} -deffnm npt -pin on
 cd ..\n
-        """
+            """
+        elif hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
+            eq_command = f"""
+mkdir nvt; cd nvt
+gmx grompp -f {self.mdppath}/{self.nvtfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
+{self.run_exec} -deffnm nvt -pin on
+cd ..\n
+            """
+        else: 
+            eq_command = f"""
+mkdir npt; cd npt
+gmx grompp -f {self.mdppath}/{self.nptfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o npt.tpr -maxwarn 2
+{self.run_exec} -deffnm npt -pin on
+cd ..\n
+            """
         return eq_command
 
     def prod(self):
-        if not self.mdfile:
+        if not hasattr(self, "mdfile"):
             print(f"WARNING: No production parameter file found in '{self.mdppath}'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
             self.path = "../em"
             self.inputfile = "em.gro"
         if "eq" in self.simtype:
-            self.path = "../npt"
-            self.inputfile = "npt.gro"
-            self.checkpoint = "npt.cpt"
+            if hasattr(self, "nptfile"):
+                self.path = "../npt"
+                self.inputfile = "npt.gro"
+                self.checkpoint = "npt.cpt"
+            else:
+                self.path = "../nvt"
+                self.inputfile = "nvt.gro"
+                self.checkpoint = "nvt.cpt"
         prod_command = f"""
 mkdir md; cd md
 gmx grompp -f {self.mdppath}/{self.mdfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -t {self.path}/{self.checkpoint} -r {self.path}/{self.inputfile} -o md.tpr -maxwarn 2
@@ -613,7 +652,7 @@ if __name__ == "__main__":
                         "checkpoint writing.\nRequired for gromacs: .gro/.pdb file "
                         "and .top file or a .tpr file.\nOptional for gromacs: .ndx "
                         "file, .cpt file (if restart or if only production run)\n"
-                        "Required for amber: .rst7/.crd/.ncrst/.inpcrd, .prm/.prmtop"),
+                        "Required for amber: .rst7/.crd/.ncrst/.inpcrd/.rst, .prm/.prmtop"),
                         metavar="INPUT")
     parser.add_argument("-o", "--output",
                         dest="jobname",

@@ -14,7 +14,7 @@ if [[ $create_alias == y || $create_alias == "yes" ]] ; then
     echo -e "Creating alias...\n"
     echo "alias submit_job='python $VSC_HOME/scripts/submit_job.py'" >> $VSC_HOME/.bashrc
     echo "source '$VSC_HOME/scripts/autocomplete_submit_job.sh'" >> $VSC_HOME/.bashrc
-    source $vSC_HOME/.bashrc
+    source $VSC_HOME/.bashrc
 else
     echo -e "Not creating an alias.\n"
 fi
