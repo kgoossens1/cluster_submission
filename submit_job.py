@@ -33,7 +33,7 @@ class SmartFormatter(HelpFormatter):
         return HelpFormatter._split_lines(self, text, width)
 
 #Classes to store required parameters and paths for amber, gaussian and gromacs.
-class Amber_variables:
+class Amber_variables(object):
     def __init__(self,
                  dirname,
                  outpath,
@@ -144,7 +144,7 @@ cd ..
             process = subprocess.Popen(command)
         return
 
-class Gromacs_variables:
+class Gromacs_variables(object):
     def __init__(self,
                  dirname,
                  outpath,
@@ -290,7 +290,7 @@ cd ..\n
             process = subprocess.Popen(command)
         return
 
-class Gaussian_variables:
+class Gaussian_variables(object):
     def __init__(self,
                  queue,
                  nodes,
