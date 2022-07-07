@@ -694,7 +694,7 @@ if __name__ == "__main__":
     if args.dirname is not currdir:
         wd = os.path.join(basedir, args.dirname)
     else:
-        wd = basedir
+        wd = currdir
     if args.outpath is not None:
         args.outpath = os.path.join(basedir, args.outpath)
     else:
