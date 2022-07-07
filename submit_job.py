@@ -74,34 +74,34 @@ class Amber_variables:
         for root,dirs,files in os.walk(self.inpath):
             for file in files:
                 if file.endswith("min.in"):
-                    self.min = file
+                    self.minfile = file
                 elif file.endswith("em.in"):
-                    self.min = file
+                    self.minfile = file
                 elif file.endswith("nvt.in"):
-                    self.nvt = file
+                    self.nvtfile = file
                 elif file.endswith("heat.in"):
-                    self.nvt = file
+                    self.nvtfile = file
                 elif file.endswith("npt.in"):
-                    self.npt = file
+                    self.nptfile = file
                 elif file.endswith("md.in"):
-                    self.md = file
+                    self.mdfile = file
                 elif file.endswith("prod.in"):
-                    self.md = file
+                    self.mdfile = file
         return
 
     def min(self):
-        if not self.min:
+        if not self.minfile:
             print(f"WARNING: No minimization parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         min_command = f"""
 mkdir em; cd em
-{self.run_exec} -O -i {self.inpath}/{self.min} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/min.log -r {self.outputpath}/min.rst7
+{self.run_exec} -O -i {self.inpath}/{self.minfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/min.log -r {self.outputpath}/min.rst7
 cd ..
         """
         return min_command
 
     def eq(self):
-        if not self.nvt or not self.npt:
+        if not self.nvtfile or not self.nptfile:
             print(f"WARNING: No nvt or npt parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
@@ -109,16 +109,16 @@ cd ..
             self.inputfile = "em.rst7"
         eq_command = f"""
 mkdir nvt; cd nvt
-{self.run_exec} -O -i {self.inpath}/{self.nvt} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nvtfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/nvt.log -r {self.outputpath}/nvt.rst7
 cd ..\n
 mkdir npt; cd npt
-{self.run_exec} -O -i {self.inpath}/{self.npt} -p {self.toppath}/{self.topology} -c ../nvt/nvt.rst7 -ref ../nvt/nvt.rst7 -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
+{self.run_exec} -O -i {self.inpath}/{self.nptfile} -p {self.toppath}/{self.topology} -c ../nvt/nvt.rst7 -ref ../nvt/nvt.rst7 -o {self.outputpath}/npt.log -r {self.outputpath}/npt.rst7
 cd ..
         """
         return eq_command
 
     def prod(self):
-        if not self.prod:
+        if not self.mdfile:
             print(f"WARNING: No production parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
@@ -130,7 +130,7 @@ cd ..
             self.checkpoint = "npt.cpt"
         prod_command = f"""
 mkdir md; cd md
-{self.run_exec} -O -i {self.inpath}/{self.prod} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/md.log -r {self.outputpath}/md.rst7 -x md.nc 
+{self.run_exec} -O -i {self.inpath}/{self.mdfile} -p {self.toppath}/{self.topology} -c {self.path}/{self.inputfile} -ref {self.path}/{self.inputfile} -o {self.outputpath}/md.log -r {self.outputpath}/md.rst7 -x md.nc 
 cd ..
             """
         return prod_command
@@ -197,37 +197,37 @@ class Gromacs_variables:
             self.run_exec = f"mpirun -np {tasks} gmx_mpi mdrun"
         else:
             self.run_exec = f"mpirun -np {tasks} gmx_mpi mdrun -ntomp {omp}"
-        for root,dirs,files in os.walk(self.inpath):
+        for root,dirs,files in os.walk(self.mdppath):
             for file in files:
                 if file.endswith("min.mdp"):
-                    self.min = file
+                    self.minfile = file
                 elif file.endswith("em.mdp"):
-                    self.min = file
+                    self.minfile = file
                 elif file.endswith("nvt.mdp"):
-                    self.nvt = file
+                    self.nvtfile = file
                 elif file.endswith("heat.mdp"):
-                    self.nvt = file
+                    self.nvtfile = file
                 elif file.endswith("npt.mdp"):
-                    self.npt = file
+                    self.nptfile = file
                 elif file.endswith("md.mdp"):
-                    self.md = file
+                    self.mdfile = file
                 elif file.endswith("prod.mdp"):
-                    self.md = file
+                    self.mdfile = file
         return
     def min(self):
-        if not self.min:
+        if not self.minfile:
             print(f"WARNING: No minimization parameter file file found in '{self.mdppath}/'. \nTerminating...")
             sys.exit(0)
         min_command = f"""
 mkdir em; cd em
-gmx grompp -f {self.mdppath}/{self.min} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -o em.tpr
+gmx grompp -f {self.mdppath}/{self.minfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -o em.tpr
 {self.run_exec} -deffnm em -pin on
 cd ..
         """
         return min_command
 
     def eq(self):
-        if not self.nvt or not self.npt:
+        if not self.nvtfile or not self.nptfile:
             print(f"WARNING: No nvt or npt parameter file found in '{self.mdppath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
@@ -235,18 +235,18 @@ cd ..
             self.inputfile = "em.gro"
         eq_command = f"""
 mkdir nvt; cd nvt
-gmx grompp -f {self.mdppath}/{self.nvt} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
+gmx grompp -f {self.mdppath}/{self.nvtfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -r {self.path}/{self.inputfile} -o nvt.tpr -maxwarn 2
 {self.run_exec} -deffnm nvt -pin on
 cd ..\n
 mkdir npt; cd npt
-gmx grompp -f {self.mdppath}/{self.npt} -c ../nvt/nvt.gro -p {self.toppath}/{self.topology} -r ../nvt/nvt.gro -o npt.tpr -maxwarn 2
+gmx grompp -f {self.mdppath}/{self.nptfile} -c ../nvt/nvt.gro -p {self.toppath}/{self.topology} -r ../nvt/nvt.gro -o npt.tpr -maxwarn 2
 {self.run_exec} -deffnm npt -pin on
 cd ..\n
         """
         return eq_command
 
     def prod(self):
-        if not self.md:
+        if not self.mdfile:
             print(f"WARNING: No production parameter file found in '{self.mdppath}'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
@@ -258,7 +258,7 @@ cd ..\n
             self.checkpoint = "npt.cpt"
         prod_command = f"""
 mkdir md; cd md
-gmx grompp -f {self.mdppath}/{self.md} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -t {self.path}/{self.checkpoint} -r {self.path}/{self.inputfile} -o md.tpr -maxwarn 2
+gmx grompp -f {self.mdppath}/{self.mdfile} -c {self.path}/{self.inputfile} -p {self.toppath}/{self.topology} -t {self.path}/{self.checkpoint} -r {self.path}/{self.inputfile} -o md.tpr -maxwarn 2
 {self.run_exec} -deffnm md -pin on
 cd ..\n
         """
