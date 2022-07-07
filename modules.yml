@@ -11,8 +11,8 @@ modules:
         cpu: Amber/20-intel-2020a-AmberTools-20-patchlevel-6-10
         gpu: Amber/20-intel-2020a-AmberTools-21-patchlevel-12-12-CUDA
     gaussian:
-        cpu: Gaussian/g16_a03-avx2
-        gpu: Gaussian/g16_a03-avx2
+        cpu: Gaussian/g16_c01-avx2
+        gpu: Gaussian/g16_c01-avx2
 
 hopper_modules:
     gromacs:
@@ -21,7 +21,7 @@ hopper_modules:
     amber:
         cpu: Amber/18-intel-2020a-AmberTools-19-patchlevel-17-12
     gaussian:
-        cpu: Gaussian/g16_a03-avx
+        cpu: Gaussian/g16_c03-avx
 
              
 breniac_modules:

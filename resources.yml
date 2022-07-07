@@ -8,7 +8,7 @@ leibniz_slurm:
     time: "72:00:00"
 vaughan:
     cores: 64
-    memory: 3 
+    memory: 3.75 
     time: "72:00:00"
 hopper:
     cores: 20 
