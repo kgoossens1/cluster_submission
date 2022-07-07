@@ -292,7 +292,7 @@ class Gaussian_variables:
 
     def gaussian_commands(self):
         commands = []
-        change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{int((self.procs/self.nodes)-1)}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{in((self.procs/self.nodes)-1)}/g' {self.path}/${{job_name}}.com"
+        change_proc = f"sed -i 's/[cC][pP][uU]=.*/CPU=0-{int((self.procs/self.nodes)-1)}/g ; s/[nN][pP][rR][oO][cC]=.*/CPU=0-{int((self.procs/self.nodes)-1)}/g' {self.path}/${{job_name}}.com"
         if hasattr(self, "checkpoint"):
             change_chk_path = f"sed -i '/[cC][hH][kK]=.*/d' {self.path}/${{job_name}}.com; sed -i '/CPU=0/a %Chk={self.outputpath}\/{self.checkpoint}' {self.path}/${{job_name}}.com"
         else:
@@ -515,6 +515,7 @@ def print_partition_info(queue):
 if __name__ == "__main__":
     basedir = os.environ["VSC_SCRATCH"]
     homedir = os.environ["VSC_HOME"]
+    currdir = os.getcwd()
     script_dir = os.path.abspath(os.path.dirname(__file__))
     with open((os.path.join(script_dir, "modules.yml")), "r") as file:
         modules = yaml.safe_load(file)
@@ -534,16 +535,16 @@ if __name__ == "__main__":
                                  "hopper",
                                  "breniac",
                                  "pascal_gpu",
-                                 "ampere_gpu"
+                                 "ampere_gpu",
                                  "arcturus_gpu"],
                         metavar="QUEUE")
     requiredNamed.add_argument("-p", "--path",
                         dest="dirname",
                         type=str,
-                        default=basedir,
+                        default=currdir,
                         help=("The path to the directory with input files." 
-                        " Looks for the directory in the scratch folder." 
-                        " If not provided, scratch folder is used."),
+                        " Looks for the provided directory in the scratch folder." 
+                        " If no directory is provided, the current folder is used."),
                         metavar="PATH")
     parser.add_argument("-po", "--path_out",
                         dest="outpath",
@@ -690,7 +691,7 @@ if __name__ == "__main__":
     if args.walltime == "max":
         args.walltime = resources[args.queue]["time"]
 #set paths
-    if args.dirname is not basedir:
+    if args.dirname is not currdir:
         wd = os.path.join(basedir, args.dirname)
     else:
         wd = basedir
