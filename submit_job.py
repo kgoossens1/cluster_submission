@@ -487,7 +487,7 @@ def submit_job(queue, jobname, nosubmit, keep):
     return 
 
 def print_partition_info(queue):
-    if queue in ["pascal_gpu", "leibniz_slurm", "leibniz_pbs":
+    if queue in ["pascal_gpu", "leibniz_slurm", "leibniz_pbs"]:
         queue = "leibniz"
     elif queue == "ampere_gpu":
         queue = "vaughan"        
