@@ -16,7 +16,7 @@ import yaml
 from argparse import ArgumentParser, HelpFormatter
 
 __author__ = "Kenneth Goossens"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 __email__ = "goossens_kenny@hotmail.com"
 
 """
@@ -101,7 +101,7 @@ cd ..
         return min_command
 
     def eq(self):
-        if not hasattrr(self, "nvtfile") and not hasattr(self, "nptfile"):
+        if not hasattr(self, "nvtfile") and not hasattr(self, "nptfile"):
             print(f"WARNING: No nvt or npt parameter file found in '{self.inpath}/'. \nTerminating...")
             sys.exit(0)
         if "min" in self.simtype:
