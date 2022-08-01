@@ -804,7 +804,7 @@ if __name__ == "__main__":
         if args.software == "amber":
             pass
         if args.software == "gaussian":
-            print("WARNING: GPU calculations are not possible with curren NVIDIA Tesla A100/P100 GPUs (Vaughan) because they do not have enough memory. \nContinuing...")
+            print("WARNING: GPU calculations are not possible with current NVIDIA Tesla A100/P100 GPUs (Vaughan) because they do not have enough memory. \nContinuing...")
     if args.software == "amber":
         if args.plumed:
             print("WARNING: Amber support for plumed calculations is currently not available. \nTerminating...")
